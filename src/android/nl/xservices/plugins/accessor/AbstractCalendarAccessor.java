@@ -450,6 +450,11 @@ public abstract class AbstractCalendarAccessor {
                              String location, Long firstReminderMinutes, Long secondReminderMinutes,
                              String recurrence, Long recurrenceEndTime) {
     try {
+      //modified by Nengock to fix Calendar ID problem on android device
+      String[] activeCalendarIds = getActiveCalendarIds();
+      if (activeCalendarIds.length == 0) {
+          return false;
+      }
       ContentResolver cr = this.cordova.getActivity().getContentResolver();
       ContentValues values = new ContentValues();
       final boolean allDayEvent = isAllDayEvent(new Date(startTime), new Date(endTime));
@@ -460,7 +465,7 @@ public abstract class AbstractCalendarAccessor {
       values.put(Events.TITLE, title);
       values.put(Events.DESCRIPTION, description);
       values.put(Events.HAS_ALARM, 1);
-      values.put(Events.CALENDAR_ID, 1);
+      values.put(Events.CALENDAR_ID, Integer.parseInt(activeCalendarIds[0])); //modified
       values.put(Events.EVENT_LOCATION, location);
 
       if (recurrence != null) {
@@ -475,9 +480,6 @@ public abstract class AbstractCalendarAccessor {
       Uri uri = cr.insert(eventsUri, values);
 
       Log.d(LOG_TAG, "Added to ContentResolver");
-
-      // TODO ?
-      getActiveCalendarIds();
 
       if (firstReminderMinutes != null) {
         ContentValues reminderValues = new ContentValues();
